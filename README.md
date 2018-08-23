@@ -6,7 +6,7 @@
 
 Using npm:
 
-    $ npm i wspm -g
+    $ npm i socket-performance -g
 
 
 

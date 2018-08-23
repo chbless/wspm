@@ -110,7 +110,7 @@ io.on('connection', socket => {
 
 const checkVersion = () => {
     return new Promise((resolve, reject) => {
-        request('http://registry.npmjs.org/wspm/latest', function(error, response, body) {
+        request('http://registry.npmjs.org/socket-performance/latest', function(error, response, body) {
             let data = JSON.parse(body)
             if (version === data.version) {
                 resolve()
@@ -125,7 +125,7 @@ const checkVersion = () => {
 const printInfo = nowVersion => {
     if (nowVersion) {
         console.log(chalk.rgb(102, 204, 0)(`remote is ${nowVersion}, current is ${version}, we will update`))
-        console.log(chalk.rgb(102, 204, 0)(`try npm i wspm -g`))
+        console.log(chalk.rgb(102, 204, 0)(`try npm i socket-performance -g`))
     }
     else {
         console.log(chalk.rgb(102, 204, 0)(`socket 服务已启动，客户端请加载 <script src="${baseUrl}/performance-client.js"></script>`))
