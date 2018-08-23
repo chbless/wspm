@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>性能监控</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon shortcut" type="image/ico" href="/favicon.png">
+    <link rel="icon" href="/favicon.png">
+    <link rel="stylesheet" href="/libs/animate.css">
+    <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+
+    <div id="connection-info"></div>
+    <div id="timing-info"></div>
+    <div id="rendering-info"></div>
+    <div id="mask"></div>
+
+    <!-- 依赖库 -->
+    <script src="/libs/san.min.js"></script>
+    <script src="/libs/echarts.min.js"></script>
+    <script src="/libs/ua-parser.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- 组件 -->
+    <script src="/components/connectionInfo.js"></script>
+    <script src="/components/timing.js"></script>
+    <script src="/components/rendering.js"></script>
+    <script src="/components/mask.js"></script>
+
+    <!-- 入口 -->
+    <script src="/index.js"></script>
+
+</body>
+</html>

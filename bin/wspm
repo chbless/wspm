@@ -1,0 +1,166 @@
+#!/usr/bin/env node --harmony
+
+const program = require('commander')
+const http = require('http')
+const fs = require('fs')
+const path = require('path')
+const socketIo = require('socket.io')
+const dateTime = require('date-time')
+const chalk = require('chalk')
+const ip = require('ip').address()
+const open = require('opn')
+const asciify = require('asciify')
+const basePath = path.resolve(__dirname, '..')
+const request = require('request')
+const version = require('../package.json').version
+
+let port = 8000
+let baseUrl = `http://${ip}:${port}`
+
+const app = http.createServer((req, res) => {
+
+    if (!req.url) {
+        return res.end('Error')
+    }
+    if (req.url === '/performance-client.js') {
+        fs.readFile(basePath + '/libs/socket.io.js', (socketjsErr, socketjs) => {
+            if (socketjsErr) {
+                res.writeHead(500)
+                return res.end(socketjsErr)
+            }
+            else {
+                fs.readFile(basePath + '/components' + req.url, (clientjsErr, clientjs) => {
+                    if (clientjsErr) {
+                        res.writeHead(500)
+                        return res.end(clientjsErr)
+                    }
+                    let data = socketjs + clientjs + `setTimeout(function() {performanceClient("${baseUrl}")}, 1000);`;
+                    res.writeHead(200)
+                    res.end(data)
+                })
+            }
+        })
+    }
+    else {
+        const url = req.url === '/' ? '/index.html' : req.url
+        const filePath = basePath + url
+
+        fs.readFile(filePath, (err, data) => {
+
+            if (err) {
+                res.writeHead(500)
+                return res.end(err)
+            }
+
+            res.writeHead(200)
+            res.end(data)
+
+        })
+    }
+})
+
+const io = socketIo(app)
+let watcher = null
+let connectionInfo = null
+let connectionTimingInfo = null
+
+io.on('connection', socket => {
+
+    const handshake = socket.handshake
+    const socketId = socket.id
+    const time = dateTime(handshake.time)
+    const referer = handshake.headers.referer || handshake.headers.origin
+    const userAgent = handshake.headers['user-agent']
+
+    if (handshake.query.type) {
+        socket.join('watcher', (err) => {
+            if (connectionInfo) {
+                socket.emit('connectionInfo', connectionInfo)
+            }
+            if (connectionTimingInfo) {
+                socket.emit('timing', connectionTimingInfo)
+            }
+        });
+    }
+    else {
+        connectionInfo = {
+            time,
+            socketId,
+            referer,
+            userAgent
+        }
+        socket.to('watcher').emit('connectionInfo', connectionInfo)
+    }
+
+    socket.on('message', function (data) {
+        if (data.type === 'timing') {
+            connectionTimingInfo = data.info
+        }
+        socket.to('watcher').emit(data.type, data.info)
+    })
+
+    socket.on('disconnect', (reason) => {
+        if (connectionInfo && socket.id === connectionInfo.socketId) {
+            socket.to('watcher').emit('viewDisconnected')
+            connectionInfo = null
+            connectionTimingInfo = null
+        }
+    });
+})
+
+const checkVersion = () => {
+    return new Promise((resolve, reject) => {
+        request('http://registry.npmjs.org/wspm/latest', function(error, response, body) {
+            let data = JSON.parse(body)
+            if (version === data.version) {
+                resolve()
+            }
+            else {
+                reject(data.version)
+            }
+        })
+    })
+}
+
+const printInfo = nowVersion => {
+    if (nowVersion) {
+        console.log(chalk.rgb(102, 204, 0)(`remote is ${nowVersion}, current is ${version}, we will update`))
+        console.log(chalk.rgb(102, 204, 0)(`try npm i wspm -g`))
+    }
+    else {
+        console.log(chalk.rgb(102, 204, 0)(`socket 服务已启动，客户端请加载 <script src="${baseUrl}/performance-client.js"></script>`))
+        console.log(chalk.rgb(0, 153, 153)(`或者，你可以尝试以下代码`))
+        console.log(chalk.rgb(0, 153, 153)(
+
+`var performanceClient = document.createElement('script');
+performanceClient.src = '${baseUrl}/performance-client.js';
+document.body.appendChild(performanceClient);`
+
+        ))
+    }
+    // WSPM Web Socket Performance Monitoring
+    asciify('WSPM', {
+        // isometric4
+        font:'lean'
+    }, (err, res) => {
+        console.log(res)
+    })
+}
+
+
+program
+  .option('-p, --port [port]', 'socket 服务端口')
+  .action((options) => {
+      checkVersion().then(() => {
+          if (options.port) {
+              port = options.port
+              baseUrl = `http://${ip}:${port}`
+          }
+          app.listen(port)
+          open(baseUrl)
+          printInfo()
+      }).catch((nowVersion) => {
+          printInfo(nowVersion)
+      })
+  })
+  .parse(process.argv)
