@@ -31,9 +31,23 @@ socket.on('rendering', function (data) {
     renderingConfig.series[2].data[0].value = Math.round(data.mb.usedJSHeapSize / 1048576);
 
     renderingChart.setOption(renderingConfig);
+
+    // FPS
+    fpsConfig.xAxis[0].data.push(Math.round(data.now / 1000) + 's');
+    fpsConfig.series[0].data.push(data.fps);
+
+    fpsChart.setOption(fpsConfig);
+
+    // MS
+    msConfig.xAxis[0].data.push(Math.round(data.now / 1000) + 's');
+    msConfig.series[0].data.push(data.ms);
+
+    msChart.setOption(msConfig);
+
     timer = setTimeout(function() {
         maskShow('监测对象休眠中...');
     },2000);
+
 });
 
 socket.on('viewDisconnected', function (data) {

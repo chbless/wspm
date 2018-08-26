@@ -11,22 +11,24 @@
     <link rel="stylesheet" href="/index.css">
 </head>
 <body>
-
-    <div id="connection-info"></div>
-    <div id="timing-info"></div>
+    <div id="connection-info" data-tippy-interactive="true" data-tippy-placement="top-start" data-tippy-duration="1000"></div>
     <div id="rendering-info"></div>
+    <div id="fps-info"></div>
+    <div id="ms-info"></div>
     <div id="mask"></div>
 
     <!-- 依赖库 -->
-    <script src="/libs/san.min.js"></script>
     <script src="/libs/echarts.min.js"></script>
     <script src="/libs/ua-parser.min.js"></script>
+    <script src="/libs/tippy.all.min.js"></script>
+    <script src="/libs/art-template.js"></script>
     <script src="/socket.io/socket.io.js"></script>
 
     <!-- 组件 -->
     <script src="/components/connectionInfo.js"></script>
-    <script src="/components/timing.js"></script>
     <script src="/components/rendering.js"></script>
+    <script src="/components/fps.js"></script>
+    <script src="/components/ms.js"></script>
     <script src="/components/mask.js"></script>
 
     <!-- 入口 -->
